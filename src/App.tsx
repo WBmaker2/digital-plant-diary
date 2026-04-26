@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import GrowthChart from './components/GrowthChart';
 import ObservationForm from './components/ObservationForm';
 import {
   createObservation,
@@ -36,6 +37,8 @@ export default function App() {
           그래프로 확인해요.
         </p>
       </header>
+
+      <GrowthChart observations={observations} />
 
       <section className="workspace" aria-label="식물 관찰 입력과 기록">
         <ObservationForm onSubmit={addObservation} />

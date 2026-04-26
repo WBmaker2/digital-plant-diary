@@ -1,7 +1,14 @@
 import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { vi } from 'vitest';
 import App from './App';
 import { OBSERVATION_STORAGE_KEY } from './lib/observationStorage';
+
+vi.mock('react-chartjs-2', () => ({
+  Line: ({ data }: { data: { labels: string[] } }) => (
+    <div data-testid="growth-line-chart">{data.labels.join(',')}</div>
+  )
+}));
 
 describe('App', () => {
   beforeEach(() => {
@@ -52,6 +59,21 @@ describe('App', () => {
 
     const timeline = screen.getByLabelText('식물 관찰 타임라인');
     expect(within(timeline).queryByText('잎 색이 연해졌어요.')).not.toBeInTheDocument();
+  });
+
+  it('updates the growth chart after saving observations', async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    await user.clear(screen.getByLabelText('관찰 날짜'));
+    await user.type(screen.getByLabelText('관찰 날짜'), '2026-04-26');
+    await user.clear(screen.getByLabelText('식물의 키(cm)'));
+    await user.type(screen.getByLabelText('식물의 키(cm)'), '8');
+    await user.type(screen.getByLabelText('관찰 내용'), '처음 싹이 보였어요.');
+    await user.click(screen.getByRole('button', { name: '기록 저장' }));
+
+    expect(screen.getByTestId('growth-line-chart')).toHaveTextContent('4/26');
+    expect(screen.getByText('지금까지 0cm 자랐어요.')).toBeInTheDocument();
   });
 
   it('ignores a stale photo read after submitting the form', async () => {
