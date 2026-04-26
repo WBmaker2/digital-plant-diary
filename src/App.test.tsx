@@ -105,6 +105,22 @@ describe('App', () => {
     expect(screen.getByText('지금까지 4.5cm 자랐어요.')).toBeInTheDocument();
   });
 
+  it('deletes an observation and announces the change', async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    await user.clear(screen.getByLabelText('관찰 날짜'));
+    await user.type(screen.getByLabelText('관찰 날짜'), '2026-04-26');
+    await user.clear(screen.getByLabelText('식물의 키(cm)'));
+    await user.type(screen.getByLabelText('식물의 키(cm)'), '9');
+    await user.type(screen.getByLabelText('관찰 내용'), '줄기가 조금 휘어졌어요.');
+    await user.click(screen.getByRole('button', { name: '기록 저장' }));
+    await user.click(screen.getByRole('button', { name: '2026-04-26 기록 삭제' }));
+
+    expect(screen.queryByText('줄기가 조금 휘어졌어요.')).not.toBeInTheDocument();
+    expect(screen.getByRole('status')).toHaveTextContent('관찰 기록을 삭제했어요.');
+  });
+
   it('ignores a stale photo read after submitting the form', async () => {
     const readers: Array<{
       result: string | ArrayBuffer | null;

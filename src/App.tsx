@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import GrowthChart from './components/GrowthChart';
 import ObservationForm from './components/ObservationForm';
+import ObservationTimeline from './components/ObservationTimeline';
 import {
   createObservation,
   loadObservations,
@@ -13,6 +14,7 @@ export default function App() {
   const [observations, setObservations] = useState<PlantObservation[]>(() =>
     loadObservations()
   );
+  const [statusMessage, setStatusMessage] = useState('');
 
   useEffect(() => {
     if (!hasSkippedInitialSave.current) {
@@ -25,6 +27,12 @@ export default function App() {
 
   const addObservation = (draft: ObservationDraft) => {
     setObservations((current) => [...current, createObservation(draft)]);
+    setStatusMessage('관찰 기록을 저장했어요.');
+  };
+
+  const deleteObservation = (id: string) => {
+    setObservations((current) => current.filter((item) => item.id !== id));
+    setStatusMessage('관찰 기록을 삭제했어요.');
   };
 
   return (
@@ -42,15 +50,13 @@ export default function App() {
 
       <section className="workspace" aria-label="식물 관찰 입력과 기록">
         <ObservationForm onSubmit={addObservation} />
-        <section aria-label="식물 관찰 타임라인">
-          {observations.map((item) => (
-            <article className="note-card" key={item.id}>
-              <time dateTime={item.date}>{item.date}</time>
-              <strong>{item.heightCm}cm</strong>
-              <p>{item.note}</p>
-            </article>
-          ))}
-        </section>
+        <ObservationTimeline
+          observations={observations}
+          onDelete={deleteObservation}
+        />
+        <p className="sr-only" role="status" aria-live="polite">
+          {statusMessage}
+        </p>
       </section>
     </main>
   );
