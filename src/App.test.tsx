@@ -34,6 +34,14 @@ describe('App', () => {
     vi.unstubAllGlobals();
   });
 
+  it('exposes the main classroom regions with accessible names', () => {
+    render(<App />);
+
+    expect(screen.getByLabelText('식물 성장 그래프')).toBeInTheDocument();
+    expect(screen.getByLabelText('식물 관찰 입력과 기록')).toBeInTheDocument();
+    expect(screen.getByLabelText('식물 관찰 타임라인')).toBeInTheDocument();
+  });
+
   it('adds a plant observation from the form', async () => {
     const user = userEvent.setup();
     render(<App />);
