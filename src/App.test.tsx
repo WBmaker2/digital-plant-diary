@@ -5,8 +5,23 @@ import App from './App';
 import { OBSERVATION_STORAGE_KEY } from './lib/observationStorage';
 
 vi.mock('react-chartjs-2', () => ({
-  Line: ({ data }: { data: { labels: string[] } }) => (
-    <div data-testid="growth-line-chart">{data.labels.join(',')}</div>
+  Line: ({
+    'aria-label': ariaLabel,
+    data,
+    role
+  }: {
+    'aria-label': string;
+    data: { labels: string[]; datasets: Array<{ data: number[] }> };
+    role: string;
+  }) => (
+    <div
+      aria-label={ariaLabel}
+      data-testid="growth-line-chart"
+      data-values={data.datasets[0].data.join(',')}
+      role={role}
+    >
+      {data.labels.join(',')}
+    </div>
   )
 }));
 
@@ -66,14 +81,28 @@ describe('App', () => {
     render(<App />);
 
     await user.clear(screen.getByLabelText('관찰 날짜'));
+    await user.type(screen.getByLabelText('관찰 날짜'), '2026-04-28');
+    await user.clear(screen.getByLabelText('식물의 키(cm)'));
+    await user.type(screen.getByLabelText('식물의 키(cm)'), '12.5');
+    await user.type(screen.getByLabelText('관찰 내용'), '줄기가 더 길어졌어요.');
+    await user.click(screen.getByRole('button', { name: '기록 저장' }));
+
+    await user.clear(screen.getByLabelText('관찰 날짜'));
     await user.type(screen.getByLabelText('관찰 날짜'), '2026-04-26');
     await user.clear(screen.getByLabelText('식물의 키(cm)'));
     await user.type(screen.getByLabelText('식물의 키(cm)'), '8');
     await user.type(screen.getByLabelText('관찰 내용'), '처음 싹이 보였어요.');
     await user.click(screen.getByRole('button', { name: '기록 저장' }));
 
-    expect(screen.getByTestId('growth-line-chart')).toHaveTextContent('4/26');
-    expect(screen.getByText('지금까지 0cm 자랐어요.')).toBeInTheDocument();
+    const chart = screen.getByTestId('growth-line-chart');
+    expect(
+      screen.getByRole('img', { name: '식물 키 성장 선 그래프' })
+    ).toBeInTheDocument();
+    expect(chart).toHaveTextContent('4/26,4/28');
+    expect(chart).toHaveAttribute('data-values', '8,12.5');
+    expect(screen.getByText('4/26: 8cm')).toBeInTheDocument();
+    expect(screen.getByText('4/28: 12.5cm')).toBeInTheDocument();
+    expect(screen.getByText('지금까지 4.5cm 자랐어요.')).toBeInTheDocument();
   });
 
   it('ignores a stale photo read after submitting the form', async () => {

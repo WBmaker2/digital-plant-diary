@@ -59,6 +59,7 @@ export default function GrowthChart({ observations }: GrowthChartProps) {
         <>
           <div className="chart-frame">
             <Line
+              aria-label="식물 키 성장 선 그래프"
               data={data}
               options={{
                 responsive: true,
@@ -83,8 +84,16 @@ export default function GrowthChart({ observations }: GrowthChartProps) {
                   }
                 }
               }}
+              role="img"
             />
           </div>
+          <ul className="sr-only" aria-label="식물 성장 그래프 데이터">
+            {chartData.labels.map((label, index) => (
+              <li key={`${label}-${index}`}>
+                {label}: {chartData.values[index]}cm
+              </li>
+            ))}
+          </ul>
           <p className="growth-summary">
             지금까지 {summary.totalGrowthCm}cm 자랐어요.
           </p>
