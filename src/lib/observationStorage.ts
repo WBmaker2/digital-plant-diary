@@ -27,26 +27,34 @@ export const sortObservations = (
     return dateCompare === 0 ? a.createdAt.localeCompare(b.createdAt) : dateCompare;
   });
 
+const normalizeHeightCm = (heightCm: number): number => {
+  if (!Number.isFinite(heightCm) || heightCm < 0) {
+    return 0;
+  }
+
+  return heightCm;
+};
+
 export const createObservation = (
   draft: ObservationDraft,
   now = new Date()
 ): PlantObservation => ({
   id: `plant-${now.getTime()}-${Math.random().toString(36).slice(2, 8)}`,
   date: draft.date,
-  heightCm: Math.max(0, Number(draft.heightCm)),
+  heightCm: normalizeHeightCm(Number(draft.heightCm)),
   note: draft.note.trim(),
   photoDataUrl: draft.photoDataUrl,
   createdAt: now.toISOString()
 });
 
 export const loadObservations = (): PlantObservation[] => {
-  const raw = localStorage.getItem(OBSERVATION_STORAGE_KEY);
-
-  if (!raw) {
-    return [];
-  }
-
   try {
+    const raw = localStorage.getItem(OBSERVATION_STORAGE_KEY);
+
+    if (!raw) {
+      return [];
+    }
+
     const parsed = JSON.parse(raw);
     return Array.isArray(parsed) ? sortObservations(parsed.filter(isObservation)) : [];
   } catch {
@@ -55,12 +63,20 @@ export const loadObservations = (): PlantObservation[] => {
 };
 
 export const saveObservations = (observations: PlantObservation[]) => {
-  localStorage.setItem(
-    OBSERVATION_STORAGE_KEY,
-    JSON.stringify(sortObservations(observations))
-  );
+  try {
+    localStorage.setItem(
+      OBSERVATION_STORAGE_KEY,
+      JSON.stringify(sortObservations(observations))
+    );
+  } catch {
+    // Storage can be unavailable in private mode or restricted environments.
+  }
 };
 
 export const clearObservations = () => {
-  localStorage.removeItem(OBSERVATION_STORAGE_KEY);
+  try {
+    localStorage.removeItem(OBSERVATION_STORAGE_KEY);
+  } catch {
+    // Storage can be unavailable in private mode or restricted environments.
+  }
 };
