@@ -37,7 +37,7 @@ export const getLatestObservation = (
   observations: PlantObservation[]
 ): PlantObservation | null => {
   const sorted = sortObservations(observations);
-  return sorted.at(-1) ?? null;
+  return sorted.length > 0 ? sorted[sorted.length - 1] : null;
 };
 
 export const getGrowthSummary = (
@@ -52,8 +52,9 @@ export const getGrowthSummary = (
     };
   }
 
+  const latest = sorted[sorted.length - 1];
   const totalGrowthCm = Number(
-    (sorted.at(-1)!.heightCm - sorted[0].heightCm).toFixed(1)
+    (latest.heightCm - sorted[0].heightCm).toFixed(1)
   );
 
   const fastestGrowth = sorted.slice(1).reduce<FastestGrowth | null>(
