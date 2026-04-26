@@ -79,6 +79,8 @@ export default function ObservationForm({ onSubmit }: ObservationFormProps) {
       return;
     }
 
+    photoReadId.current += 1;
+
     onSubmit({
       date,
       heightCm: Number(heightCm),
