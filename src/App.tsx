@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import ObservationForm from './components/ObservationForm';
 import {
   createObservation,
@@ -8,11 +8,17 @@ import {
 import type { ObservationDraft, PlantObservation } from './types/plantDiary';
 
 export default function App() {
+  const hasSkippedInitialSave = useRef(false);
   const [observations, setObservations] = useState<PlantObservation[]>(() =>
     loadObservations()
   );
 
   useEffect(() => {
+    if (!hasSkippedInitialSave.current) {
+      hasSkippedInitialSave.current = true;
+      return;
+    }
+
     saveObservations(observations);
   }, [observations]);
 

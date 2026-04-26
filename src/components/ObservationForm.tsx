@@ -1,4 +1,5 @@
-import { FormEvent, useMemo, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
+import type { ChangeEvent, FormEvent } from 'react';
 import type { ObservationDraft } from '../types/plantDiary';
 
 interface ObservationFormProps {
@@ -16,16 +17,60 @@ const readFileAsDataUrl = (file: File): Promise<string> =>
   });
 
 export default function ObservationForm({ onSubmit }: ObservationFormProps) {
+  const photoReadId = useRef(0);
   const [date, setDate] = useState(today);
   const [heightCm, setHeightCm] = useState('5');
   const [note, setNote] = useState('');
   const [photoDataUrl, setPhotoDataUrl] = useState<string | undefined>();
   const [photoName, setPhotoName] = useState('');
+  const [photoError, setPhotoError] = useState('');
+
+  const parsedHeightCm = Number(heightCm);
 
   const canSubmit = useMemo(
-    () => date.length > 0 && Number(heightCm) >= 0 && note.trim().length > 0,
-    [date, heightCm, note]
+    () =>
+      date.length > 0 &&
+      heightCm.trim().length > 0 &&
+      Number.isFinite(parsedHeightCm) &&
+      parsedHeightCm >= 0 &&
+      note.trim().length > 0,
+    [date, heightCm, note, parsedHeightCm]
   );
+
+  const handlePhotoChange = async (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    const readId = photoReadId.current + 1;
+    photoReadId.current = readId;
+    setPhotoError('');
+
+    if (!file) {
+      setPhotoDataUrl(undefined);
+      setPhotoName('');
+      return;
+    }
+
+    setPhotoDataUrl(undefined);
+    setPhotoName(file.name);
+
+    try {
+      const dataUrl = await readFileAsDataUrl(file);
+
+      if (photoReadId.current !== readId) {
+        return;
+      }
+
+      setPhotoDataUrl(dataUrl);
+      setPhotoName(file.name);
+    } catch {
+      if (photoReadId.current !== readId) {
+        return;
+      }
+
+      setPhotoDataUrl(undefined);
+      setPhotoName('');
+      setPhotoError('사진을 읽지 못했어요.');
+    }
+  };
 
   const handleSubmit = (event: FormEvent) => {
     event.preventDefault();
@@ -59,7 +104,7 @@ export default function ObservationForm({ onSubmit }: ObservationFormProps) {
           />
         </label>
         <label>
-          <span>식물의 키</span>
+          <span>식물의 키(cm)</span>
           <input
             type="number"
             min="0"
@@ -85,20 +130,11 @@ export default function ObservationForm({ onSubmit }: ObservationFormProps) {
         <input
           type="file"
           accept="image/*"
-          onChange={async (event) => {
-            const file = event.target.files?.[0];
-
-            if (!file) {
-              setPhotoDataUrl(undefined);
-              setPhotoName('');
-              return;
-            }
-
-            setPhotoDataUrl(await readFileAsDataUrl(file));
-            setPhotoName(file.name);
-          }}
+          onChange={handlePhotoChange}
         />
-        <small>{photoName || '사진은 선택 사항입니다.'}</small>
+        <small aria-live="polite">
+          {photoError || photoName || '사진은 선택 사항입니다.'}
+        </small>
       </label>
       <button type="submit" disabled={!canSubmit}>
         기록 저장
