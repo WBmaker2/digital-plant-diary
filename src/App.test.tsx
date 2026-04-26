@@ -37,9 +37,15 @@ describe('App', () => {
   it('exposes the main classroom regions with accessible names', () => {
     render(<App />);
 
-    expect(screen.getByLabelText('식물 성장 그래프')).toBeInTheDocument();
-    expect(screen.getByLabelText('식물 관찰 입력과 기록')).toBeInTheDocument();
-    expect(screen.getByLabelText('식물 관찰 타임라인')).toBeInTheDocument();
+    expect(
+      screen.getByRole('region', { name: '식물 성장 그래프' })
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole('region', { name: '식물 관찰 입력과 기록' })
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole('region', { name: '식물 관찰 타임라인' })
+    ).toBeInTheDocument();
   });
 
   it('adds a plant observation from the form', async () => {
