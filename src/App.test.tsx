@@ -115,10 +115,23 @@ describe('App', () => {
     await user.type(screen.getByLabelText('식물의 키(cm)'), '9');
     await user.type(screen.getByLabelText('관찰 내용'), '줄기가 조금 휘어졌어요.');
     await user.click(screen.getByRole('button', { name: '기록 저장' }));
-    await user.click(screen.getByRole('button', { name: '2026-04-26 기록 삭제' }));
+    await user.click(
+      screen.getByRole('button', {
+        name: '2026-04-26 9cm 기록 삭제: 줄기가 조금 휘어졌어요.'
+      })
+    );
 
     expect(screen.queryByText('줄기가 조금 휘어졌어요.')).not.toBeInTheDocument();
     expect(screen.getByRole('status')).toHaveTextContent('관찰 기록을 삭제했어요.');
+    await waitFor(() => {
+      const stored = JSON.parse(
+        localStorage.getItem(OBSERVATION_STORAGE_KEY) ?? '[]'
+      ) as Array<{ note: string }>;
+
+      expect(
+        stored.some((observation) => observation.note === '줄기가 조금 휘어졌어요.')
+      ).toBe(false);
+    });
   });
 
   it('ignores a stale photo read after submitting the form', async () => {

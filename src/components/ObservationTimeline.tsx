@@ -29,7 +29,11 @@ export default function ObservationTimeline({
                 <strong>{item.heightCm}cm</strong>
                 <p>{item.note}</p>
               </div>
-              <button type="button" onClick={() => onDelete(item.id)}>
+              <button
+                type="button"
+                aria-label={`${item.date} ${item.heightCm}cm 기록 삭제: ${item.note.slice(0, 20)}`}
+                onClick={() => onDelete(item.id)}
+              >
                 {item.date} 기록 삭제
               </button>
             </article>
