@@ -304,11 +304,15 @@ describe('App', () => {
       })
     );
 
-    const timeline = screen.getByLabelText('식물 관찰 타임라인');
-    expect(
-      within(timeline).getByText('백업에서 돌아온 기록이에요.')
-    ).toBeInTheDocument();
-    expect(screen.getByRole('status')).toHaveTextContent('백업 기록을 불러왔어요.');
+    await waitFor(() => {
+      const timeline = screen.getByLabelText('식물 관찰 타임라인');
+      expect(
+        within(timeline).getByText('백업에서 돌아온 기록이에요.')
+      ).toBeInTheDocument();
+      expect(screen.getByRole('status')).toHaveTextContent(
+        '백업 기록을 불러왔어요.'
+      );
+    });
 
     await waitFor(() => {
       const stored = JSON.parse(
