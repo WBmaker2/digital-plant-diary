@@ -30,7 +30,7 @@
 - Modify: `src/setupTests.ts`
 - Modify: `package.json`
 
-- [ ] **Step 1: Add a failing environment regression test by running current tests on Node 25**
+- [x] **Step 1: Add a failing environment regression test by running current tests on Node 25**
 
 Run:
 
@@ -40,7 +40,7 @@ PATH=/opt/homebrew/bin:$PATH npm test
 
 Expected before fix: FAIL with `localStorage.clear is not a function`.
 
-- [ ] **Step 2: Patch `src/setupTests.ts` with a memory-backed Storage shim**
+- [x] **Step 2: Patch `src/setupTests.ts` with a memory-backed Storage shim**
 
 Replace the file with:
 
@@ -88,7 +88,7 @@ const installLocalStorageShim = () => {
 installLocalStorageShim();
 ```
 
-- [ ] **Step 3: Add a verify script**
+- [x] **Step 3: Add a verify script**
 
 Update `package.json` scripts to include:
 
@@ -96,7 +96,7 @@ Update `package.json` scripts to include:
 "verify": "npm test && npm run build"
 ```
 
-- [ ] **Step 4: Verify tests and build**
+- [x] **Step 4: Verify tests and build**
 
 Run:
 
@@ -107,7 +107,7 @@ PATH=/opt/homebrew/bin:$PATH npm run build
 
 Expected: all 23 tests pass and Vite build succeeds.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add src/setupTests.ts package.json package-lock.json
@@ -125,7 +125,7 @@ git commit -m "test: stabilize local storage in vitest"
 - Modify: `src/App.test.tsx`
 - Modify: `src/App.css`
 
-- [ ] **Step 1: Write storage import/export tests**
+- [x] **Step 1: Write storage import/export tests**
 
 Add tests to `src/lib/observationStorage.test.ts`:
 
@@ -178,7 +178,7 @@ it('rejects invalid backup payloads', () => {
 });
 ```
 
-- [ ] **Step 2: Implement pure backup helpers**
+- [x] **Step 2: Implement pure backup helpers**
 
 Add exports in `src/lib/observationStorage.ts`:
 
@@ -225,7 +225,7 @@ export const parseObservationBackup = (raw: string): PlantObservation[] => {
 };
 ```
 
-- [ ] **Step 3: Write app-level backup/restore tests**
+- [x] **Step 3: Write app-level backup/restore tests**
 
 Add tests to `src/App.test.tsx` that:
 - create one observation
@@ -235,7 +235,7 @@ Add tests to `src/App.test.tsx` that:
 - assert the imported card appears and the status says `백업 기록을 불러왔어요.`
 - upload invalid JSON and assert `백업 파일을 읽지 못했어요.`
 
-- [ ] **Step 4: Implement backup controls in `src/App.tsx`**
+- [x] **Step 4: Implement backup controls in `src/App.tsx`**
 
 Add:
 - `handleExportBackup()`
@@ -243,11 +243,11 @@ Add:
 - a `<section className="backup-panel" aria-label="관찰 기록 백업">`
 - buttons/inputs with accessible names `백업 저장`, `백업 불러오기`
 
-- [ ] **Step 5: Style backup controls in `src/App.css`**
+- [x] **Step 5: Style backup controls in `src/App.css`**
 
 Add a compact bordered panel that matches `.observation-form` and keeps controls from overflowing on mobile.
 
-- [ ] **Step 6: Verify**
+- [x] **Step 6: Verify**
 
 Run:
 
@@ -258,7 +258,7 @@ PATH=/opt/homebrew/bin:$PATH npm run build
 
 Expected: all tests pass and build succeeds.
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```bash
 git add src/lib/observationStorage.ts src/lib/observationStorage.test.ts src/App.tsx src/App.test.tsx src/App.css
@@ -274,14 +274,14 @@ git commit -m "feat: add observation backup restore"
 - Modify: `src/App.test.tsx`
 - Modify: `src/App.css`
 
-- [ ] **Step 1: Add a failing photo-size test**
+- [x] **Step 1: Add a failing photo-size test**
 
 Add an app test that uploads a 2 MB image file and expects:
 - `사진은 1MB 이하로 추가해 주세요.`
 - `FileReader` not called
 - the save button remains usable after the file is rejected if date/height/note are valid
 
-- [ ] **Step 2: Implement the file-size guard**
+- [x] **Step 2: Implement the file-size guard**
 
 Add:
 
@@ -301,7 +301,7 @@ if (file.size > MAX_PHOTO_BYTES) {
 }
 ```
 
-- [ ] **Step 3: Add helper copy**
+- [x] **Step 3: Add helper copy**
 
 Update the file picker helper fallback to:
 
@@ -309,7 +309,7 @@ Update the file picker helper fallback to:
 photoError || photoName || '사진은 선택 사항이며 1MB 이하를 권장합니다.'
 ```
 
-- [ ] **Step 4: Verify**
+- [x] **Step 4: Verify**
 
 Run:
 
@@ -320,7 +320,7 @@ PATH=/opt/homebrew/bin:$PATH npm run build
 
 Expected: all tests pass and build succeeds.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add src/components/ObservationForm.tsx src/App.test.tsx src/App.css
@@ -334,7 +334,7 @@ git commit -m "fix: guard oversized observation photos"
 **Files:**
 - Modify: `README.md`
 
-- [ ] **Step 1: Add classroom operation guidance**
+- [x] **Step 1: Add classroom operation guidance**
 
 Add sections:
 
@@ -358,7 +358,7 @@ Add sections:
 - 학급 공용 기기에서는 학생 개인정보가 포함된 사진을 피합니다.
 ```
 
-- [ ] **Step 2: Verify README stays concise**
+- [x] **Step 2: Verify README stays concise**
 
 Run:
 
@@ -368,7 +368,7 @@ sed -n '1,220p' README.md
 
 Expected: public URL, subject/grade context, run commands, backup guidance are present.
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 git add README.md
@@ -382,7 +382,7 @@ git commit -m "docs: add classroom operation guidance"
 **Files:**
 - No planned source changes.
 
-- [ ] **Step 1: Run full verification**
+- [x] **Step 1: Run full verification**
 
 Run:
 
@@ -396,7 +396,7 @@ Expected:
 - build succeeds
 - branch has only intentional commits
 
-- [ ] **Step 2: Optional browser check**
+- [x] **Step 2: Optional browser check**
 
 Run the dev server:
 
@@ -411,7 +411,7 @@ Open the app and confirm:
 - importing restores a card
 - oversized photo shows the 1MB warning
 
-- [ ] **Step 3: Summarize**
+- [x] **Step 3: Summarize**
 
 Report:
 - branch name
