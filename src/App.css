@@ -89,6 +89,7 @@ h2 {
 
 .growth-panel,
 .observation-form,
+.backup-panel,
 .timeline-panel {
   border: 2px solid #244d36;
   border-radius: 8px;
@@ -129,7 +130,14 @@ h2 {
   align-items: start;
 }
 
+.control-stack {
+  display: grid;
+  gap: 18px;
+  min-width: 0;
+}
+
 .observation-form,
+.backup-panel,
 .timeline-panel {
   min-width: 0;
   padding: 22px;
@@ -138,6 +146,42 @@ h2 {
 .observation-form {
   display: grid;
   gap: 16px;
+}
+
+.backup-panel {
+  display: grid;
+  gap: 16px;
+}
+
+.backup-actions {
+  display: grid;
+  gap: 12px;
+}
+
+.backup-panel button {
+  min-width: 0;
+  min-height: 44px;
+  border-radius: 8px;
+  background: #287a46;
+  color: white;
+  font-weight: 900;
+  overflow-wrap: anywhere;
+}
+
+.backup-panel button:disabled {
+  cursor: not-allowed;
+  background: #aab8a2;
+}
+
+.backup-import {
+  display: grid;
+  gap: 8px;
+}
+
+.backup-copy {
+  margin-bottom: 0;
+  color: #526252;
+  line-height: 1.55;
 }
 
 .form-grid {
@@ -295,9 +339,10 @@ button:focus-visible {
     grid-template-columns: 1fr;
   }
 
-  .growth-panel,
-  .observation-form,
-  .timeline-panel {
+.growth-panel,
+.observation-form,
+.backup-panel,
+.timeline-panel {
     box-shadow: 5px 5px 0 #2f6c47;
   }
 

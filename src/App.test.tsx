@@ -215,4 +215,90 @@ describe('App', () => {
       expect(secondObservation?.photoDataUrl).toBeUndefined();
     });
   });
+
+  it('downloads a JSON backup of saved observations', async () => {
+    const user = userEvent.setup();
+    const createObjectUrl = vi.fn(() => 'blob:plant-diary-backup');
+    const revokeObjectUrl = vi.fn();
+    const anchorClick = vi
+      .spyOn(HTMLAnchorElement.prototype, 'click')
+      .mockImplementation(() => {});
+
+    vi.stubGlobal('URL', {
+      ...URL,
+      createObjectURL: createObjectUrl,
+      revokeObjectURL: revokeObjectUrl
+    });
+
+    render(<App />);
+
+    await user.clear(screen.getByLabelText('관찰 날짜'));
+    await user.type(screen.getByLabelText('관찰 날짜'), '2026-04-26');
+    await user.clear(screen.getByLabelText('식물의 키(cm)'));
+    await user.type(screen.getByLabelText('식물의 키(cm)'), '8');
+    await user.type(screen.getByLabelText('관찰 내용'), '처음 싹이 보였어요.');
+    await user.click(screen.getByRole('button', { name: '기록 저장' }));
+    await user.click(screen.getByRole('button', { name: '백업 저장' }));
+
+    expect(createObjectUrl).toHaveBeenCalledWith(expect.any(Blob));
+    expect(anchorClick).toHaveBeenCalled();
+    expect(revokeObjectUrl).toHaveBeenCalledWith('blob:plant-diary-backup');
+    expect(screen.getByRole('status')).toHaveTextContent('백업 파일을 저장했어요.');
+  });
+
+  it('imports observations from a JSON backup file', async () => {
+    const user = userEvent.setup();
+    const backup = {
+      version: 1,
+      exportedAt: '2026-04-26T00:00:00.000Z',
+      observations: [
+        {
+          id: 'plant-imported',
+          date: '2026-04-26',
+          heightCm: 8,
+          note: '백업에서 돌아온 기록이에요.',
+          createdAt: '2026-04-26T00:00:00.000Z'
+        }
+      ]
+    };
+
+    render(<App />);
+
+    await user.upload(
+      screen.getByLabelText('백업 불러오기'),
+      new File([JSON.stringify(backup)], 'plant-backup.json', {
+        type: 'application/json'
+      })
+    );
+
+    const timeline = screen.getByLabelText('식물 관찰 타임라인');
+    expect(
+      within(timeline).getByText('백업에서 돌아온 기록이에요.')
+    ).toBeInTheDocument();
+    expect(screen.getByRole('status')).toHaveTextContent('백업 기록을 불러왔어요.');
+
+    await waitFor(() => {
+      const stored = JSON.parse(
+        localStorage.getItem(OBSERVATION_STORAGE_KEY) ?? '[]'
+      ) as Array<{ note: string }>;
+
+      expect(stored).toEqual([
+        expect.objectContaining({ note: '백업에서 돌아온 기록이에요.' })
+      ]);
+    });
+  });
+
+  it('announces an invalid JSON backup file', async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    await user.upload(
+      screen.getByLabelText('백업 불러오기'),
+      new File(['not json'], 'broken.json', { type: 'application/json' })
+    );
+
+    expect(screen.getByRole('status')).toHaveTextContent(
+      '백업 파일을 읽지 못했어요.'
+    );
+  });
 });

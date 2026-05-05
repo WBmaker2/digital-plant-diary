@@ -1,6 +1,7 @@
 import type { ObservationDraft, PlantObservation } from '../types/plantDiary';
 
 export const OBSERVATION_STORAGE_KEY = 'digital-plant-diary:observations';
+export const OBSERVATION_BACKUP_VERSION = 1;
 
 const isObservation = (value: unknown): value is PlantObservation => {
   if (!value || typeof value !== 'object') {
@@ -79,4 +80,41 @@ export const clearObservations = () => {
   } catch {
     // Storage can be unavailable in private mode or restricted environments.
   }
+};
+
+export const exportObservationBackup = (
+  observations: PlantObservation[],
+  exportedAt = new Date()
+): string =>
+  JSON.stringify(
+    {
+      version: OBSERVATION_BACKUP_VERSION,
+      exportedAt: exportedAt.toISOString(),
+      observations: sortObservations(observations)
+    },
+    null,
+    2
+  );
+
+export const parseObservationBackup = (raw: string): PlantObservation[] => {
+  let parsed: { version?: unknown; observations?: unknown };
+
+  try {
+    parsed = JSON.parse(raw) as {
+      version?: unknown;
+      observations?: unknown;
+    };
+  } catch {
+    throw new Error('백업 파일을 읽지 못했어요.');
+  }
+
+  if (parsed.version !== OBSERVATION_BACKUP_VERSION) {
+    throw new Error('지원하지 않는 백업 파일입니다.');
+  }
+
+  if (!Array.isArray(parsed.observations)) {
+    throw new Error('백업 파일을 읽지 못했어요.');
+  }
+
+  return sortObservations(parsed.observations.filter(isObservation));
 };

@@ -1,7 +1,9 @@
 import {
   OBSERVATION_STORAGE_KEY,
   createObservation,
+  exportObservationBackup,
   loadObservations,
+  parseObservationBackup,
   saveObservations,
   clearObservations
 } from './observationStorage';
@@ -119,5 +121,52 @@ describe('observationStorage', () => {
     clearObservations();
 
     expect(loadObservations()).toEqual([]);
+  });
+
+  it('exports observations with a version and sorted observations', () => {
+    const later = createObservation({
+      date: '2026-04-28',
+      heightCm: 15,
+      note: '줄기가 곧아졌어요.'
+    });
+    const earlier = createObservation({
+      date: '2026-04-26',
+      heightCm: 11,
+      note: '떡잎이 보였어요.'
+    });
+
+    const parsed = JSON.parse(exportObservationBackup([later, earlier])) as {
+      version: number;
+      observations: Array<{ date: string }>;
+    };
+
+    expect(parsed.version).toBe(1);
+    expect(parsed.observations.map((item) => item.date)).toEqual([
+      '2026-04-26',
+      '2026-04-28'
+    ]);
+  });
+
+  it('imports observations from a backup payload', () => {
+    const observation = createObservation({
+      date: '2026-04-26',
+      heightCm: 8,
+      note: '처음 싹이 보였어요.'
+    });
+
+    const imported = parseObservationBackup(
+      JSON.stringify({ version: 1, observations: [observation] })
+    );
+
+    expect(imported).toEqual([observation]);
+  });
+
+  it('rejects invalid backup payloads', () => {
+    expect(() => parseObservationBackup('{"version":2,"observations":[]}')).toThrow(
+      '지원하지 않는 백업 파일입니다.'
+    );
+    expect(() => parseObservationBackup('not json')).toThrow(
+      '백업 파일을 읽지 못했어요.'
+    );
   });
 });
