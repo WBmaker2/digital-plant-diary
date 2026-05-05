@@ -189,7 +189,9 @@ describe('App', () => {
 
     expect(screen.getByText('old-photo.png')).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: '기록 저장' }));
-    expect(screen.getByText('사진은 선택 사항입니다.')).toBeInTheDocument();
+    expect(
+      screen.getByText('사진은 선택 사항이며 1MB 이하를 권장합니다.')
+    ).toBeInTheDocument();
 
     readers[0].result = 'data:image/png;base64,stale';
     readers[0].onload?.call(
@@ -198,7 +200,9 @@ describe('App', () => {
     );
 
     await waitFor(() => {
-      expect(screen.getByText('사진은 선택 사항입니다.')).toBeInTheDocument();
+      expect(
+        screen.getByText('사진은 선택 사항이며 1MB 이하를 권장합니다.')
+      ).toBeInTheDocument();
     });
 
     await user.type(screen.getByLabelText('관찰 내용'), '두 번째 기록이에요.');
@@ -214,6 +218,35 @@ describe('App', () => {
 
       expect(secondObservation?.photoDataUrl).toBeUndefined();
     });
+  });
+
+  it('rejects oversized observation photos before reading them', async () => {
+    const fileReader = vi.fn();
+    vi.stubGlobal('FileReader', fileReader);
+
+    const user = userEvent.setup();
+    render(<App />);
+
+    await user.clear(screen.getByLabelText('관찰 날짜'));
+    await user.type(screen.getByLabelText('관찰 날짜'), '2026-04-26');
+    await user.clear(screen.getByLabelText('식물의 키(cm)'));
+    await user.type(screen.getByLabelText('식물의 키(cm)'), '12.5');
+    await user.type(screen.getByLabelText('관찰 내용'), '사진 없이 저장할 기록이에요.');
+    await user.upload(
+      screen.getByLabelText(/사진 추가/),
+      new File([new Uint8Array(1_000_001)], 'large-photo.png', {
+        type: 'image/png'
+      })
+    );
+
+    expect(screen.getByText('사진은 1MB 이하로 추가해 주세요.')).toBeInTheDocument();
+    expect(fileReader).not.toHaveBeenCalled();
+
+    const saveButton = screen.getByRole('button', { name: '기록 저장' });
+    expect(saveButton).toBeEnabled();
+    await user.click(saveButton);
+
+    expect(screen.getByText('사진 없이 저장할 기록이에요.')).toBeInTheDocument();
   });
 
   it('downloads a JSON backup of saved observations', async () => {

@@ -6,6 +6,8 @@ interface ObservationFormProps {
   onSubmit: (draft: ObservationDraft) => void;
 }
 
+const MAX_PHOTO_BYTES = 1_000_000;
+
 const today = () => new Date().toISOString().slice(0, 10);
 
 const readFileAsDataUrl = (file: File): Promise<string> =>
@@ -46,6 +48,14 @@ export default function ObservationForm({ onSubmit }: ObservationFormProps) {
     if (!file) {
       setPhotoDataUrl(undefined);
       setPhotoName('');
+      return;
+    }
+
+    if (file.size > MAX_PHOTO_BYTES) {
+      setPhotoDataUrl(undefined);
+      setPhotoName('');
+      setPhotoError('사진은 1MB 이하로 추가해 주세요.');
+      event.target.value = '';
       return;
     }
 
@@ -135,7 +145,7 @@ export default function ObservationForm({ onSubmit }: ObservationFormProps) {
           onChange={handlePhotoChange}
         />
         <small aria-live="polite">
-          {photoError || photoName || '사진은 선택 사항입니다.'}
+          {photoError || photoName || '사진은 선택 사항이며 1MB 이하를 권장합니다.'}
         </small>
       </label>
       <button type="submit" disabled={!canSubmit}>
